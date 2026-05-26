@@ -11,11 +11,129 @@ tests/cloud_training/test_cloud_data.py::TestCloudData::test_cloud_data_create_t
 tests/cloud_training/test_main.py::TestMain::test_route_preprocess PASSED [ 44%]
 tests/cloud_training/test_main.py::TestMain::test_route_train[local] PASSED [ 55%]
 tests/cloud_training/test_main.py::TestMain::test_route_train[gcs] PASSED [ 66%]
-tests/cloud_training/test_main.py::TestMain::test_route_evaluate PASSED  [ 77%]
-tests/cloud_training/test_main.py::TestMain::test_route_pred PASSED      [ 88%]
+tests/cloud_training/test_main.py::TestMain::test_route_evaluate FAILED  [ 77%]
+tests/cloud_training/test_main.py::TestMain::test_route_pred FAILED      [ 88%]
 tests/cloud_training/test_vm.py::test_i_am_a_vm FAILED                   [100%]
 
 =================================== FAILURES ===================================
+_________________________ TestMain.test_route_evaluate _________________________
+
+self = <tests.cloud_training.test_main.TestMain object at 0x774acc3bcdc0>
+
+    @patch("taxifare.params.MODEL_TARGET", new='local')
+    def test_route_evaluate(self):
+        from taxifare.interface.main import evaluate
+    
+>       mae = evaluate(min_date=MIN_DATE, max_date=MAX_DATE)
+
+tests/cloud_training/test_main.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+taxifare/interface/main.py:225: in evaluate
+    metrics_dict = evaluate_model(model=model, X=X_new, y=y_new)
+taxifare/ml_logic/model.py:105: in evaluate_model
+    metrics = model.evaluate(
+/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/utils/traceback_utils.py:70: in error_handler
+    raise e.with_traceback(filtered_tb) from None
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+iterator = <tensorflow.python.data.ops.iterator_ops.OwnedIterator object at 0x7749d4fbc8e0>
+
+    def tf__test_function(iterator):
+        """Runs a test execution with a single step."""
+        with ag__.FunctionScope('test_function', 'fscope', ag__.ConversionOptions(recursive=True, user_requested=True, optional_features=(), internal_convert_user_code=True)) as fscope:
+            do_return = False
+            retval_ = ag__.UndefinedReturnValue()
+            try:
+                do_return = True
+>               retval_ = ag__.converted_call(ag__.ld(step_function), (ag__.ld(self), ag__.ld(iterator)), None, fscope)
+E               ValueError: in user code:
+E               
+E                   File "/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/engine/training.py", line 1727, in test_function  *
+E                       return step_function(self, iterator)
+E                   File "/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/engine/training.py", line 1713, in step_function  **
+E                       outputs = model.distribute_strategy.run(run_step, args=(data,))
+E                   File "/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/engine/training.py", line 1701, in run_step  **
+E                       outputs = model.test_step(data)
+E                   File "/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/engine/training.py", line 1665, in test_step
+E                       y_pred = self(x, training=False)
+E                   File "/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/utils/traceback_utils.py", line 70, in error_handler
+E                       raise e.with_traceback(filtered_tb) from None
+E                   File "/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/engine/input_spec.py", line 295, in assert_input_compatibility
+E                       raise ValueError(
+E               
+E                   ValueError: Input 0 of layer "sequential_3" is incompatible with the layer: expected shape=(None, 64), found shape=(None, 65)
+
+/tmp/__autograph_generated_filezlqfxfh9.py:15: ValueError
+----------------------------- Captured stdout call -----------------------------
+[35m
+⭐️ Use case: evaluate[0m
+[34m
+Load latest model from local registry...[0m
+[34m
+Load latest model from disk...[0m
+✅ Model loaded from local disk
+[34m
+Load data from local CSV...[0m
+✅ Data loaded, with shape (447, 67)
+[34m
+Evaluating model on 447 rows...[0m
+___________________________ TestMain.test_route_pred ___________________________
+
+self = <tests.cloud_training.test_main.TestMain object at 0x774acc3bd090>
+
+    @patch("taxifare.params.MODEL_TARGET", new='local')
+    def test_route_pred(self):
+        from taxifare.interface.main import pred
+    
+>       y_pred = pred()
+
+tests/cloud_training/test_main.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+taxifare/interface/main.py:264: in pred
+    y_pred = model.predict(X_processed)
+/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/utils/traceback_utils.py:70: in error_handler
+    raise e.with_traceback(filtered_tb) from None
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+iterator = <tensorflow.python.data.ops.iterator_ops.OwnedIterator object at 0x7749d4d74340>
+
+    def tf__predict_function(iterator):
+        """Runs an evaluation execution with a single step."""
+        with ag__.FunctionScope('predict_function', 'fscope', ag__.ConversionOptions(recursive=True, user_requested=True, optional_features=(), internal_convert_user_code=True)) as fscope:
+            do_return = False
+            retval_ = ag__.UndefinedReturnValue()
+            try:
+                do_return = True
+>               retval_ = ag__.converted_call(ag__.ld(step_function), (ag__.ld(self), ag__.ld(iterator)), None, fscope)
+E               ValueError: in user code:
+E               
+E                   File "/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/engine/training.py", line 2041, in predict_function  *
+E                       return step_function(self, iterator)
+E                   File "/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/engine/training.py", line 2027, in step_function  **
+E                       outputs = model.distribute_strategy.run(run_step, args=(data,))
+E                   File "/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/engine/training.py", line 2015, in run_step  **
+E                       outputs = model.predict_step(data)
+E                   File "/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/engine/training.py", line 1983, in predict_step
+E                       return self(x, training=False)
+E                   File "/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/utils/traceback_utils.py", line 70, in error_handler
+E                       raise e.with_traceback(filtered_tb) from None
+E                   File "/home/gold/.pyenv/versions/3.10.6/envs/taxifare-env/lib/python3.10/site-packages/keras/engine/input_spec.py", line 295, in assert_input_compatibility
+E                       raise ValueError(
+E               
+E                   ValueError: Input 0 of layer "sequential_3" is incompatible with the layer: expected shape=(None, 64), found shape=(None, 65)
+
+/tmp/__autograph_generated_filer8lysral.py:15: ValueError
+----------------------------- Captured stdout call -----------------------------
+
+⭐️ Use case: predict
+[34m
+Load latest model from local registry...[0m
+[34m
+Load latest model from disk...[0m
+✅ Model loaded from local disk
+[34m
+Preprocessing features...[0m
+✅ X_processed, with shape (1, 65)
 ________________________________ test_i_am_a_vm ________________________________
 
     def test_i_am_a_vm():
@@ -32,5 +150,7 @@ E         + Abed
 
 tests/cloud_training/test_vm.py:9: AssertionError
 =========================== short test summary info ============================
+FAILED tests/cloud_training/test_main.py::TestMain::test_route_evaluate - Val...
+FAILED tests/cloud_training/test_main.py::TestMain::test_route_pred - ValueEr...
 FAILED tests/cloud_training/test_vm.py::test_i_am_a_vm - AssertionError: You ...
-================== 1 failed, 8 passed, 18 warnings in 13.18s ===================
+================== 3 failed, 6 passed, 18 warnings in 23.71s ===================
