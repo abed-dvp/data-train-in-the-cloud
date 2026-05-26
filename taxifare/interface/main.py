@@ -32,13 +32,43 @@ def preprocess(min_date:str = '2009-01-01', max_date:str = '2015-01-01') -> None
         ORDER BY pickup_datetime
     """
 
-    pass  # YOUR CODE HERE
+    # YOUR CODE HERE
+
+    data_query_cache_path = Path(LOCAL_DATA_PATH).joinpath(
+        "raw", f"query_{min_date}_{max_date}_{DATA_SIZE}.csv"
+    )
+
+    data = get_data_with_cache(
+        query=query,
+        gcp_project=GCP_PROJECT,
+        cache_path=data_query_cache_path,
+        data_has_header=True
+    )
 
     # Process data
-    pass  # YOUR CODE HERE
+    # YOUR CODE HERE
+    data = clean_data(data)
+
+    X = data.drop("fare_amount", axis=1)
+    y = data[["fare_amount"]]
+
+    X_processed = preprocess_features(X)
+
+    data_processed = pd.DataFrame(
+        np.concatenate((X_processed, y), axis=1)
+    )
+
     # Load a DataFrame onto BigQuery containing [pickup_datetime, X_processed, y]
     # using data.load_data_to_bq()
-    pass  # YOUR CODE HERE
+    # YOUR CODE HERE
+
+    load_data_to_bq(
+        data_processed,
+        gcp_project=GCP_PROJECT,
+        bq_dataset=BQ_DATASET,
+        table=f"processed_{DATA_SIZE}",
+        truncate=True
+    )
 
     print("✅ preprocess() done \n")
 def train(
@@ -67,13 +97,57 @@ def train(
     # Load processed data using `get_data_with_cache` in chronological order
     # Try it out manually on console.cloud.google.com first!
 
-    pass  # YOUR CODE HERE
+   # YOUR CODE HERE
+    query = f"""
+        SELECT *
+        FROM `{GCP_PROJECT}`.{BQ_DATASET}.processed_{DATA_SIZE}
+        WHERE pickup_datetime BETWEEN '{min_date}' AND '{max_date}'
+        ORDER BY pickup_datetime
+    """
 
+    data_processed_cache_path = Path(LOCAL_DATA_PATH).joinpath(
+        "processed", f"processed_{min_date}_{max_date}_{DATA_SIZE}.csv"
+    )
+
+    data_processed = get_data_with_cache(
+        query=query,
+        gcp_project=GCP_PROJECT,
+        cache_path=data_processed_cache_path,
+        data_has_header=False
+    )
     # Create (X_train_processed, y_train, X_val_processed, y_val)
-    pass  # YOUR CODE HERE
+    # YOUR CODE HERE
+
+    data_processed = data_processed.to_numpy()
+
+    train_length = int(len(data_processed) * (1 - split_ratio))
+
+    data_train = data_processed[:train_length, :]
+    data_val = data_processed[train_length:, :]
+
+    data_train = pd.DataFrame(data_train).sample(frac=1).to_numpy()
+    data_val = pd.DataFrame(data_val).sample(frac=1).to_numpy()
+
+    X_train_processed = data_train[:, :-1]
+    y_train = data_train[:, -1]
+
+    X_val_processed = data_val[:, :-1]
+    y_val = data_val[:, -1]
 
     # Train model using `model.py`
-    pass  # YOUR CODE HERE
+    # YOUR CODE HERE
+    model = initialize_model(input_shape=X_train_processed.shape[1:])
+    model = compile_model(model, learning_rate=learning_rate)
+
+    model, history = train_model(
+        model,
+        X_train_processed,
+        y_train,
+        batch_size=batch_size,
+        patience=patience,
+        validation_data=(X_val_processed, y_val)
+    )
+
 
     val_mae = np.min(history.history['val_mae'])
 
@@ -111,7 +185,24 @@ def evaluate(
     max_date = parse(max_date).strftime('%Y-%m-%d') # e.g '2009-01-01'
 
     # Query your BigQuery processed table and get data_processed using `get_data_with_cache`
-    pass  # YOUR CODE HERE
+    # YOUR CODE HERE
+    query = f"""
+        SELECT *
+        FROM `{GCP_PROJECT}`.{BQ_DATASET}.processed_{DATA_SIZE}
+        WHERE pickup_datetime BETWEEN '{min_date}' AND '{max_date}'
+        ORDER BY pickup_datetime
+    """
+
+    data_processed_cache_path = Path(LOCAL_DATA_PATH).joinpath(
+        "processed", f"processed_{min_date}_{max_date}_{DATA_SIZE}.csv"
+    )
+
+    data_processed = get_data_with_cache(
+        query=query,
+        gcp_project=GCP_PROJECT,
+        cache_path=data_processed_cache_path,
+        data_has_header=False
+    )
 
     if data_processed.shape[0] == 0:
         print("❌ No data to evaluate on")
